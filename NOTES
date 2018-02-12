@@ -1,0 +1,164 @@
+RESOURCE: https://scotch.io/tutorials/getting-started-with-node-express-and-postgres-using-sequelize
+
+MATERIALS WE'RE GOING TO NEED
+-Node JS
+-Express
+-PostgreSQL
+-Sequelize
+-Postman
+
+We'll create a todo app to help drive the concepts home.
+
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////
+PROJECT SETUP: NOTE: You can use express-generator to scaffold the project structure, but we're going to be building everything from scratch, so we can learn how everything under the hood works.
+
+CREATING MULTIPLE FOLDERS WITHIN A FOLDER IN THE TERMINAL: -p foldername/{subfolder1, subfolder2}
+  EXERCISE: Create your project folder, and create 2 directories within it with the name bin and server
+
+  -All of the code necessary to create our server side application will go into the server folder
+   All subsequent commands will assume that you're in the top level folder(You project folder).
+
+INITIALIZE NPM: npm init -y: The -y is shorthand for yes. In other words you're telling it to accept all the default settings in your package.json
+
+INSTALL THE FOLLOWING PACKAGES: --save express body-parser morgan (LOOK MORE INTO MORGAN)
+
+  MORGAN: IN SHORT THE PURPOSE OF MORGAN IS TO LOG TO THE CONSOLE Apparently you can create a new morgan logger middleware function.
+    You handle it like every other npm package(store it in a variable).
+
+    -From what I understand its basic structure consists of 1 format, and 3 options: morgan(format, options);
+
+    -THE FORMAT: The format argument may be a string of a predefined name, a string of a format string, or a function that will produce a log entry.
+      USING PREDEFINED FORMAT STRING: morgan('tiny');
+      USING FORMAT STRING OF PREDEFINED TOKENS: morgan(':method :url :status :res[content-length] - :response-time ms');
+      USING A CUSTOM FORMAT FUNCTION:
+        morgan(function(tokens, req, res){
+        return[
+        tokens.method(req, res),
+        tokens.url(req, res),
+        tokes.status(req, res),
+        tokens.res(req, res, 'content-length'), '-',
+        tokens['reponse-time'](req, res), 'ms'
+        ].join('')
+        });
+
+    -3 ARGUMENTS: The format function will be called with 3 arguments(tokens, req, res);
+    -TOKENS: Tokens is an object with all defined tokens, req is the HTTP request, and res is the HTTP response. The function is expected to return a string that will be the log line, or undefined/null to skip logging.
+
+NPM PACKAGE INSTALL SHORTHAND: i -S packagename
+
+--------------------------------------------------------------------------------
+SETTING UP OUR EXPRESS APPLICATION(require, parsing, loggin data)
+CREATE AN APP.JS FILE: This is where we'll create our express application. This is where we're going to require all our packages, and setup the middleware. Don't forget to export this module, so we can use it anywhere.
+
+---------------------------------------------------------------------------------
+SETTING UP YOUR SERVER
+
+INSIDE THE BIN FOLDER: Create a file and call it www: This will be our application entry. We'll setup our server here. Here we're going to require all the code in our app, which contains all the packages and their functionality, along with all the parsing, and the logger.
+  Here, you're also going to require http (Remember that this allows you to create a server in node.)
+
+  SETTING UP OUR PORT: const port = parseInt(process.env.POST, 10) || 3000;
+    This is how you set up your post for all programs in your application. I don't know what parseInt does, but you're basically telling it to run what ever ports they have, otherwise, run the default port number you have set which in this example is 3000.
+
+  INSTALLING PACKAGE INTO DEPENDENCIES SHORTHAND: npm i -D packagename
+
+---------------------------------------------------------------------------------
+CREATING COMMAND TO RUN SERVER IN OUR PACKAGE.json
+
+CREATING OUR OWN SCRIPTS: You can create your own commands in the package.json file in the scripts section. It's a key value pair. You first put the command name and then what it does.
+  SYNTAX:
+    "scripts": {
+    "myscript:name": "code i want to run"
+    "start:dev": "nodemon ./bin/www"
+    "test": "echo\"Error: n test specified\" && exit 1"
+    }
+
+    SO NOW WE'RE SUPPOSED TO CREATE A COMMNAD THAT ALLOWS NODEMON TO RUN ON THE WWW FILE(SINCE THIS IS OUR SERVER): Use the code example above start:dev
+
+    RUNNING YOUR PRE-CREATED SCRIPT ON THE TERMINAL: npm run scriptname. run the start:dev
+
+----------------------------------------------------------------------------------
+
+AUTH LOGIN: When your software gives the user the ability to sign in with a 3rd party software such as facebook, twitter, google, etc. Basically there's communication between your server and the 3rd party server, and
+  They verify that it's ok for you to user your users profile, to get data back from facebook about their status, pics, user name, etc.
+
+
+
+////////////////////////////////////////////////////////////////////////////////////////
+
+SEQUELIZE SETUP: Note that sequelize is an orm(Object, Relational, Mapper): It allows you to create code that interacts with your database. I believe this is your transition between your server and your database.
+SEQUELIZE CLI: I don't remember what the CLI stands for but basically this works just the same as the regular sequelize, but the difference is that CLI runs on the terminal, and the terminal has innately more functionality than your text editor does. CLI is pretty essential for more robust, larger databases, so make sure you learn it really well.
+
+Make sure you have PostGreSQL installed.
+We'll be making use of the Sequelize CLI package to bootstrap the project for us. It will also help us generate database migrations.
+
+******************
+INSTALL SEQUELIZE CLI: You can install this package globally. Don't forget you can also install it locally to your project, to your dev dependencies.
+  EXAMPLE:
+    npm install sequelize-cli -g
+    npm install -D sequelize-cli
+*******************
+-----------------------------------------------------------------------
+CONFIGURING SEQUELIZE FOR OUR PROJECT: We'll create file called .sequelizerc in our project's root directory. In this file we're going to be specifying the paths to files required by Sequelize.
+  WE'LL ADD THE FOLLOW CODE(I don't fully understand it right now):
+    const path = require('path');
+
+    module.exports = {
+    "config": path.resolve('./server/config', 'config.json'),
+    "models-path": path.resolve('./server/models'),
+    "seeders-path": path.resolve('./server/seeders'),
+    "migrations-path": path.resolve('./server/migrations')
+    };
+
+CONFIG.JSON: The config.json file contains our application configuration settings, such as database authentication configuration.
+
+MIGRATIONS: The migrations folder will hold the application migrations.
+
+MODELS: This folder will hold our models
+
+SEED DATA: Seed data is initial data provided with a system for testing training or templating purposes.
+
+SEEDERS FOLDER: The seeders folder typically holds seed data, but we're not going to be using that in this tutorial.
+--------------------------------------------------------------------------
+***********************
+INSTALLING SEQUELIZE WITH ITS DEPENDENCIES:
+  SYNTAX:  npm install --save sequelize pg pg-hstore
+    Now you're going to notice that sequelize has created the boilerplate folder, and files. These directories are the config, migrations, models, seeders. Make this connection: These directories math the paths on the .sequelizerc file
+***********************
+
+  PG: pg will be responsible for creating the database connection
+
+  PG-HSTORE: This is a module for serializing and deserializing JSON data into the Postgres hstore format.
+
+  INITIALIZING SEQUELIZE: sequelize init
+
+************************
+MODELS/INDEX.JS FILE: This file was autogenerated, understand a little bit as to what's going on with this file: First of all this file is requiring all the modules we need to properly run sequelize.
+  Then we're reading the configuration specific to our current Node environment. If we don't have a Node environment defined, we're defaulting to development. Then, we are establishing a connection
+  with our database, after which we read our models folder, discovering and importing any and all the models in it, adding them to the db object (The way this works, is it takes all the models we
+  create in our models folder, and inside our index.js file inside our models folder, there's an object that's for the database. It stores all the models in that object), and applying relationships between the models if such relationships exist.
+************************
+
+REFACTORING INDEX.JS FILE: The autogenerated file server/models/index.js, is in ES5 sytax, we are going to refactor it to ES6 syntax.
+
+*************************
+CREATE A DEVELOPMENT DATABASE DIRECTLY FROM YOUR BASH: createdb todos-dev
+  NOTE: This command will only be available if we have PostgreSQL installed
+*************************
+
+LISTING ALL USERS ON YOUR COMPUTER: dscl . list /Users This is inside your regular shell.
+
+CONFIGURE YOUR AUTOGENERATED CONFIG.JSON FILE INSIDE SERVER/CONFIG/CONFIG.JSON: To match the information on your database and computer.
+  NOTE: "use_env_variable": "DATABASE_URL" signals sequelize to look inside our environment and extract the key whose name is DATABASE_URL and use that to connect to our DB. The specific logic that does that is in server/models/index.js
+
+EXPORTING OUR DB URL INTO OUR ENVIRONMENT, IN OUR TERMINAL:
+  SYNTAX: export DATABASE_URL=our-database-url
+
+
+THINGS I DON'T UNDERSTAND:
+.sequelizerc: I don't understand why we need it. I also don't know if that's a reserved name and that's why it works or if we can name it what ever we want.
+-The logic behind the port parseInt code.
+-I don't understand this particular module setup.
+-require('path'); I don't really know what this does, or why we need it.
+-www file: I don't understand why this file works eventhough it doesn't have an extension, same with the sequelizerc.
+I need to understand more about environments, and how they work such as node, and development, and production, etc.
+-do I need to export DATABASE URL if I'm running postgres locally?
